@@ -1,0 +1,347 @@
+---
+title: "Metaheurystyki i Technologie Wieloagentowe - Lab1"
+author: "Bartłomiej Twardowski, B.Twardowski@ii.pw.edu.pl"
+date: "26/10/2014"
+output: ioslides_presentation
+---
+
+## Basic Information
+
+### Contact information: 
+
+*Bartłomiej Twardowski* 
+
+B.Twardowski@ii.pw.edu.pl
+
+### Metaheurystyki i technologie wieloagentowe
+* Lab 1 - 26/10/2014
+* Lab 2 - 14/12/2014
+
+## Running RStudio Server
+1. Na komputerze w trybie logowania w dolnej lewej części ekranu klikamy pozycję Session i wybieramy GNOME
+2. Logujemy się za pomocą następujących poświadczeń:
+- użytkownik: test
+- hasło: test2012
+3. W lewym górnym rogu z pozycji Applications wybieramy przeglądarkę internetową klikając kolejno Internet->IceWeasel.
+4. W polu adresu wpisujemy r2d2.ii.pw.edu.pl:8787 
+5. Pojawia się ekran logowania do środowiska RStudio. Wpisujemy poświadczenia z serwera galera.
+
+
+## Lab1 Agenda
+
+* Gradient Descent
+    + Outline
+    + Algorithm Intuition
+    + Solving linear regression problem
+* Single-State Metaheuristic
+    + Main Framework
+    + Hill-Climbing
+* Population Methods - Evolutionary Algorithms
+
+## Gradient Descent - Intro
+
+- sometimes called Gradient Ascent when we maxmize cost function (e.g. in book "Essentials of Metaheuristics")
+
+- There is some cost function: $J(\theta)$
+
+- Goal: $\min_{\theta} J(\theta)$
+
+### Algorithm:
+
+- Start with some $\theta$
+
+- Keep changing $\theta$ to reduce $J(\theta)$ until we hopefully end up at minimum
+
+
+## Gradient Descent - Intuition
+
+Let's make some experiments!
+
+Script in: `exercises/grad_desc_animation.R`
+
+```{r,eval=FALSE}
+library(animation)
+par(mar = c(4, 4, 2, 0.1))
+grad.desc(interact = TRUE, gamma = 0.1)
+```
+
+Harder example:
+```{r,eval=FALSE}
+ani.options(nmax = 70)
+par(mar = c(4, 4, 2, 0.1))
+f2 = function(x, y) sin(1/2 * x^2 - 1/4 * y^2 + 3) * 
+  cos(2 * x + 1 - exp(y))
+grad.desc(f2, c(-2, -2, 2, 2), c(-1, 0.5), 
+          gamma = 0.3, tol = 1e-04, interact = TRUE)
+```
+
+
+## Simple Implementation of Linear Regression by Gradient Descent in R
+
+```{r,eval=FALSE}
+gradient_descent <- function(X, y, init_theta, cost_f = cost_fun,  
+                             alpha = 0.01 , num_iters = 1000) {
+  cost_h <- double(num_iters) #history
+  theta_h <- list(num_iters) #history
+  theta <- init_theta 
+  X <- cbind(1, matrix(X))
+  for (i in 1:num_iters) {
+    error <- (X %*% theta - y)
+    delta <- t(X) %*% error / length(y) #gradient calc.
+    theta <- theta - alpha * delta # update step
+    cost_h[i] <- cost_fun(X, y, theta) #save history
+    theta_h[[i]] <- theta #save history
+  }
+  return(list(theta=theta_h[[num_iters]], cost=cost_h[num_iters], 
+              theta_history=theta_h, cost_history=cost_h))
+}
+```
+
+## Exercise 1: cars dataset
+
+Script in: `exercises/lin_regression_by_grad_desc.R`
+
+* Load dataset and change: miles to kilometers and feet to meters
+* Plot data
+* Try another dataset analysis function and visualization
+
+```{r}
+require(datasets)
+head(cars)
+```
+
+## Exercise 1: cars dataset - plot
+
+```{r, echo=FALSE, size=200}
+cars$speed <- cars$speed * 1.609344
+cars$dist <- cars$dist * 0.3048
+plot(cars, xlab = "Speed (km/h)", ylab = "Stopping distance (m)", las = 1)
+```
+
+## Exercise 2: Running GD on cars dataset
+
+- Implement cost function for linear regression
+
+- Run `gradient_descent()` function on cars dataset and save to variable `gd_result`
+
+## Exercise 2: Running GD on cars dataset (Solution)
+
+```{r,eval=FALSE}
+cost_fun <- function(X, y, theta) {
+  sum( (X %*% theta - y)^2 ) / (2*length(y))
+}
+```
+
+```{r,eval=FALSE}
+theta_init <- matrix(c(0,0), nrow=2)
+iterations <- 100
+gd_result <- gradient_descent(X = cars$speed, 
+                              y = cars$dist, 
+                              cost_f = cost_fun, 
+                              init_theta = theta_init,
+                              alpha = 0.0001,
+                              num_iters = iterations
+)
+```
+
+
+## Gradient Descent - Comparing to *lm()*
+- in R: lm() linear model
+- function can be used to create a simple regression model
+- parameters:
+  -- formula: describe the modes, e.g. "Y ~ X", where Y is dependent(predicted) variable and X is independent variable
+  -- data: variable containing dataset
+
+## Gradient Descent - Comparing to *lm()* #1 
+
+```{r}
+lm1 = lm(dist~speed, cars)
+lm1
+```
+
+## Gradient Descent - Comparing to *lm()* #2 
+
+```{r,echo=FALSE}
+plot(cars, xlab = "Speed (mph)", ylab = "Stopping distance (ft)", las = 1)
+abline(lm1, col = 'red')
+```
+
+```{r}
+predict_speed <- data.frame(speed = c(80, 100, 120))
+predict_dist <- predict(lm1, predict_speed) 
+```
+
+## Gradient Descent - Real Life
+
+- usefull tool for convex function optimization
+
+- we not use presented approach for production data - it's far too slow :-)
+
+- for large datasets (BigData use cases) use implementation like: Stocastic Gradient Descent (SGD) available in: Spark MLib, Mahout, H2O
+  
+    + e.g. collaborative filltering matrix factorization 
+
+
+## Single-State Metaheuristic - Framework
+
+```{r,eval=FALSE}
+metaheuristic <- function(X, y, S_init, 
+                          quality, tweek, 
+                          max_iter = 1000, threshold = 0.00001) {
+  i <- 0
+  S <- S_init
+  repeat {
+   i <- i + 1
+   R <- tweak(S)
+   if(quality(R,X,y) < quality(S,X,y))
+     S <- R
+   if(quality(S,X,y) <= threshold || i == max_iter)
+     break
+  }
+  S
+}
+```
+
+## Exercise 3 - Hill-Climbing
+
+Script in: `exercises/metah_single_state.R`
+
+- implement function `tweek(S)` for Hill-Climbing  
+
+- implement function `quality(S,X,y)` for square error measure in logistic regression 
+
+- run `metaheuristic()` with Hill-Climbing 
+
+- compare results with *GD* and `lm()` methods
+
+## Exercise 3 - Example Solution
+
+```{r,eval=FALSE}
+quality <- function(S, X, y)
+  sum((y - X %*% S)^2)
+
+tweak <- function(S) { 
+  S + runif(nrow(S), min=-0.1, max=0.1)
+}
+```
+
+```{r,eval=FALSE}
+S_init <- matrix(c(0,0), nrow=2)
+X <- cbind(1, matrix(cars$speed_km))
+y <- cars$dist_m
+iterations <- 1000
+result <- metaheuristic(X, y, S_init, quality, tweek, iterations)
+```
+
+## Exercise 3 - Explore vs Exploit
+
+See *Harder Example* in script: `exercises/metah_single_state.R`
+
+- Try to implement Hill-Climbing with Random Restarts and visualize it on contour plot
+
+## Population Methods in R
+
+- There are many packages:
+    + NMOF
+    + DEoptim
+    + cmaes
+    + GA
+    + genalg
+    + pso
+    + ...and many others...
+
+## Example: Particle Swarm Optimization
+
+```{r}
+#install.packages('pso')
+require('pso')
+```
+```{r,eval=FALSE}
+?psoptim
+```
+
+- Run example from help
+
+## Exercise 4: GA Task {.smaller}
+
+*in Polish, author: B.Nachyla*
+
+*Opis problemu*
+
+- Farma Piorta produkuje 2 tony jabłek dziennie
+- Farma Sławka produkuje 4 tony jabłek dziennie
+- Przetwórnia Michała potrzebuje 5 ton jabłek dziennie
+- Przetwórnia Karola potrzebuje 1 tone jabłek dziennie
+
+Jan jest włascicielem obu farm i przetwórni. Koszty transportu 1 tony jabłek są nastepujące:
+
+- Koszt transportu z farmy Piotra do przetwórni Michała to 1000zł
+- Koszt transportu z farmy Piotra do przetwórni Karola to 1250zł
+- Koszt transportu z farmy Sławka do przetwórni Michała to 1350zł
+- Koszt transportu z farmy Sławka do przetwórni Karola to 1500zł 
+
+Jan chce tak zorganizowac transport, aby zminimalizowac koszty.
+
+## Modelowanie 
+
+*in Polish, author: B.Nachyla*
+
+Modelowanie:
+
+$\min(1000*x_{pm}+1250*x_{pk}+1350*x_{sm}+1450*x_{sk})$
+
+przy ograniczeniach:
+
+- $x_{pm}+x_{pk}\leq2$
+- $x_{sm}+x_{sk}\leq4$
+- $x_{pm}+x_{sm}\geq5$
+- $x_{pk}+x_{sk}\geq1$
+
+## Rozwiązanie metodą algorytmów genetycznych
+
+*in Polish, author: B.Nachyla*
+
+Użyjemy biblioteki **GA**
+
+```
+install.packages("GA")
+library(GA)
+```
+
+Uruchomienie zadania:
+
+```
+GA <- ga(type = "real-valued", fitness =  function(x) -Rastrigin(x),
+         min = c(0, 0,0,0), max = c(4,4,2,2), 
+         popSize = 50, maxiter = 100)
+summary(GA)
+plot(GA)
+```
+
+## Funkcja ewaluacji
+
+*in Polish, author: B.Nachyla*
+
+```
+Rastrigin <- function(x){
+  fact=10^9
+  
+  penalty=(abs(x[1]+x[2]-4)
+           +abs(x[3]+x[4]-2)+abs(x[1]+x[3]-5)+abs(x[2]+x[4]-1))
+
+  return(c(1000,1250,1350,1500)%*%x+fact*penalty)
+}
+```
+- *penalty* - kara za niedotrzymanie ograniczen
+-  *fact* - współczynnik zwiekszający siłe kary
+
+## Exercise 4 - Solution
+
+`solutions/ga_task1.R`
+
+## Exercise 5 
+
+*in Polish, author: B.Nachyla*
+
+- Rozwiązac zadanie dla wiekszego problemu (np. 7 producentów i 8 ). W pliku `exercises/ga_task_2.R` uzupełnić odpowiednio brakujące miejsca (znaki **?**)
+- Należy zapoznac sie z metodami mutacji i krzyżowania dostepnymi w pakiecie **GA**. Które z nich można zastosowac w naszym zadaniu? Sprawdzic ich działanie. 
