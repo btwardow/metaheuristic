@@ -54,3 +54,28 @@ abline(coef=result$S, col="red")
 # check out the trajectory of the cost function
 result$quality_history[seq(1,iterations, by=10)]
 plot(result$quality_history, type='l', col='blue', lwd=2, main='Quality function', ylab='quality(S,X,y)', xlab='Iterations')
+
+##
+## Hill Climbing - Harder Example
+##
+range2 = c(-4, -4, 4, 4)
+x2 <- seq(range2[1], range2[3], length= 100)
+y2 <- seq(range2[2], range2[4], length= 100)
+f2 <- function(x, y) { sin(1/2 * x^2 - 1/4 * y^2 + 3) * cos(2 * x + 1 - exp(y)) }
+z2 <- outer(x2,y2, f2)
+persp(x2, y2, z2, theta = 10, phi = 30)
+contour(x2,y2,z2)
+
+quality2 <- function(S, X, y) {
+ f2(S[1],S[2]) - y 
+}
+
+tweak2 <- function(S) { 
+  S + runif(nrow(S), min=-0.1, max=0.1)
+}
+
+S_init2 <- matrix(c(0,0), nrow=2)
+iterations2 <- 100
+result2 <- metaheuristic(x2, y2, S_init2, quality2, tweek2, iterations2)
+contour(x2,y2,z2)
+points(result2$S[1,1],result2$S[2,1], col='red') 

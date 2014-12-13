@@ -66,7 +66,7 @@ range2 = c(-4, -4, 4, 4)
 x2 <- seq(range2[1], range2[3], length= 100)
 y2 <- seq(range2[2], range2[4], length= 100)
 f2 <- function(x, y) { sin(1/2 * x^2 - 1/4 * y^2 + 3) * cos(2 * x + 1 - exp(y)) }
-z2 <- outer(x,y, f2)
+z2 <- outer(x2,y2, f2)
 persp(x2, y2, z2, theta = 10, phi = 30)
 contour(x2,y2,z2)
 
