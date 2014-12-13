@@ -10,7 +10,7 @@
 
 
 
-  <meta name="date" content="2014-12-10" />
+  <meta name="date" content="2014-12-12" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -84,7 +84,7 @@
       <h1 data-config-title><!-- populated from slide_config.json --></h1>
       <h2 data-config-subtitle><!-- populated from slide_config.json --></h2>
       <p data-config-presenter><!-- populated from slide_config.json --></p>
-            <p style="margin-top: 6px; margin-left: -2px;">26/10/2014</p>
+            <p style="margin-top: 6px; margin-left: -2px;">14/12/2014</p>
           </hgroup>
   </slide>
 
@@ -94,13 +94,15 @@
 
 <p><em>Bartłomiej Twardowski</em></p>
 
-<p><a href='mailto:B.Twardowski@ii.pw.edu.pl' title=''>B.Twardowski@ii.pw.edu.pl</a></p>
+<p><a href='mailto:B.Twardowski@ii.pw.edu.pl' title=''>B.Twardowski@ii.pw.edu.pl</a> <span class="cite">@btwardow</span></p>
 
 <h3>Metaheurystyki i technologie wieloagentowe</h3>
 
 <ul>
 <li>Lab 1 - 26/10/2014</li>
 <li>Lab 2 - 14/12/2014</li>
+<li>Lab 3 - 01/02/2014</li>
+<li>Lab e-learning</li>
 </ul>
 
 </article></slide><slide class=''><hgroup><h2>Running RStudio Server</h2></hgroup><article  id="running-rstudio-server">
@@ -121,7 +123,7 @@
 <li>Pojawia się ekran logowania do środowiska RStudio. Wpisujemy poświadczenia z serwera galera.</li>
 </ol>
 
-</article></slide><slide class=''><hgroup><h2>Lab1 Agenda</h2></hgroup><article  id="lab1-agenda">
+</article></slide><slide class=''><hgroup><h2>Agenda</h2></hgroup><article  id="agenda">
 
 <ul>
 <li>Gradient Descent
@@ -138,6 +140,15 @@
 <li>Hill-Climbing</li>
 </ul></li>
 <li>Population Methods - Evolutionary Algorithms</li>
+</ul>
+
+</article></slide><slide class=''><hgroup><h2>Slides and source code</h2></hgroup><article  id="slides-and-source-code">
+
+<p>Presentation, exercise source code with solutions are available online at:</p>
+
+<ul>
+<li><a href='http://home.elka.pw.edu.pl/~btwardow/MTW_lab1.tgz' title=''>http://home.elka.pw.edu.pl/~btwardow/MTW_lab1.tgz</a></li>
+<li><a href='https://github.com/btwardow/metaheuristic' title=''>https://github.com/btwardow/metaheuristic</a></li>
 </ul>
 
 </article></slide><slide class=''><hgroup><h2>Gradient Descent - Intro</h2></hgroup><article  id="gradient-descent---intro">
@@ -333,7 +344,7 @@ result &lt;- metaheuristic(X, y, S_init, quality, tweek, iterations)</pre>
 <li>Try to implement Hill-Climbing with Random Restarts and visualize it on contour plot</li>
 </ul>
 
-</article></slide><slide class=''><hgroup><h2>Population Methods in R</h2></hgroup><article  id="population-methods-in-r">
+</article></slide><slide class=''><hgroup><h2>Intro to Population Methods in R</h2></hgroup><article  id="intro-to-population-methods-in-r">
 
 <ul>
 <li>There are many packages:
@@ -360,95 +371,6 @@ require(&#39;pso&#39;)</pre>
 
 <ul>
 <li>Run example from help</li>
-</ul>
-
-</article></slide><slide class=''><hgroup><h2>Exercise 4: GA Task</h2></hgroup><article  id="exercise-4-ga-task" class="smaller">
-
-<p><em>in Polish, author: B.Nachyla</em></p>
-
-<p><em>Opis problemu</em></p>
-
-<ul>
-<li>Farma Piorta produkuje 2 tony jabłek dziennie</li>
-<li>Farma Sławka produkuje 4 tony jabłek dziennie</li>
-<li>Przetwórnia Michała potrzebuje 5 ton jabłek dziennie</li>
-<li>Przetwórnia Karola potrzebuje 1 tone jabłek dziennie</li>
-</ul>
-
-<p>Jan jest włascicielem obu farm i przetwórni. Koszty transportu 1 tony jabłek są nastepujące:</p>
-
-<ul>
-<li>Koszt transportu z farmy Piotra do przetwórni Michała to 1000zł</li>
-<li>Koszt transportu z farmy Piotra do przetwórni Karola to 1250zł</li>
-<li>Koszt transportu z farmy Sławka do przetwórni Michała to 1350zł</li>
-<li>Koszt transportu z farmy Sławka do przetwórni Karola to 1500zł</li>
-</ul>
-
-<p>Jan chce tak zorganizowac transport, aby zminimalizowac koszty.</p>
-
-</article></slide><slide class=''><hgroup><h2>Modelowanie</h2></hgroup><article  id="modelowanie">
-
-<p><em>in Polish, author: B.Nachyla</em></p>
-
-<p>Modelowanie:</p>
-
-<p>\(\min(1000*x_{pm}+1250*x_{pk}+1350*x_{sm}+1450*x_{sk})\)</p>
-
-<p>przy ograniczeniach:</p>
-
-<ul>
-<li>\(x_{pm}+x_{pk}\leq2\)</li>
-<li>\(x_{sm}+x_{sk}\leq4\)</li>
-<li>\(x_{pm}+x_{sm}\geq5\)</li>
-<li>\(x_{pk}+x_{sk}\geq1\)</li>
-</ul>
-
-</article></slide><slide class=''><hgroup><h2>Rozwiązanie metodą algorytmów genetycznych</h2></hgroup><article  id="rozwiazanie-metoda-algorytmow-genetycznych">
-
-<p><em>in Polish, author: B.Nachyla</em></p>
-
-<p>Użyjemy biblioteki <strong>GA</strong></p>
-
-<pre >install.packages(&quot;GA&quot;)
-library(GA)</pre>
-
-<p>Uruchomienie zadania:</p>
-
-<pre >GA &lt;- ga(type = &quot;real-valued&quot;, fitness =  function(x) -Rastrigin(x),
-         min = c(0, 0,0,0), max = c(4,4,2,2), 
-         popSize = 50, maxiter = 100)
-summary(GA)
-plot(GA)</pre>
-
-</article></slide><slide class=''><hgroup><h2>Funkcja ewaluacji</h2></hgroup><article  id="funkcja-ewaluacji">
-
-<p><em>in Polish, author: B.Nachyla</em></p>
-
-<pre >Rastrigin &lt;- function(x){
-  fact=10^9
-  
-  penalty=(abs(x[1]+x[2]-4)
-           +abs(x[3]+x[4]-2)+abs(x[1]+x[3]-5)+abs(x[2]+x[4]-1))
-
-  return(c(1000,1250,1350,1500)%*%x+fact*penalty)
-}</pre>
-
-<ul>
-<li><em>penalty</em> - kara za niedotrzymanie ograniczen</li>
-<li><em>fact</em> - współczynnik zwiekszający siłe kary</li>
-</ul>
-
-</article></slide><slide class=''><hgroup><h2>Exercise 4 - Solution</h2></hgroup><article  id="exercise-4---solution">
-
-<p><code>solutions/ga_task1.R</code></p>
-
-</article></slide><slide class=''><hgroup><h2>Exercise 5</h2></hgroup><article  id="exercise-5">
-
-<p><em>in Polish, author: B.Nachyla</em></p>
-
-<ul>
-<li>Rozwiązac zadanie dla wiekszego problemu (np. 7 producentów i 8 ). W pliku <code>exercises/ga_task_2.R</code> uzupełnić odpowiednio brakujące miejsca (znaki <strong>?</strong>)</li>
-<li>Należy zapoznac sie z metodami mutacji i krzyżowania dostepnymi w pakiecie <strong>GA</strong>. Które z nich można zastosowac w naszym zadaniu? Sprawdzic ich działanie.</li>
 </ul></article></slide>
 
 
