@@ -12,7 +12,6 @@
 ## cost function to minimize
 cost_fun <- function(X, y, theta) {
   #TODO: implement cost function
-  sum( (X %*% theta - y)^2 ) / (2*length(y))
 }
 
 ## Gradient descent function
@@ -41,8 +40,7 @@ gradient_descent <- function(X, y, init_theta, cost_f = cost_fun,  alpha = 0.01 
 
 ## Run on cars dataset
 require(datasets)
-cars$speed <- cars$speed * 1.609344
-cars$dist <- cars$dist * 0.3048
+## TODO: change spped and distance to metric values 
 
 ## TODO: Do dataset analysis
 

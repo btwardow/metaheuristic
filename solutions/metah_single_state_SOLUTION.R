@@ -31,6 +31,7 @@ tweak <- function(S) {
 }
 
 ## Run on cars dataset
+rm(cars)
 require(datasets)
 cars$speed_km <- cars$speed * 1.609344
 cars$dist_m <- cars$dist * 0.3048

@@ -41,6 +41,7 @@ gradient_descent <- function(X, y, init_theta, cost_f = cost_fun,  alpha = 0.01 
 
 ## Run on cars dataset
 require(datasets)
+## TODO: change spped and distance to metric values 
 cars$speed <- cars$speed * 1.609344
 cars$dist <- cars$dist * 0.3048
 
@@ -75,5 +76,12 @@ gd_result$cost_history[seq(1,iterations, by=10)]
 plot(gd_result$cost_history, type='l', col='blue', lwd=2, main='Cost function', ylab='cost', xlab='Iterations')
 
 # TODO: compare with model from lm()
-# lm1 <- lm(...)
-# ...
+lm1 <- lm(dist~speed, cars)
+# print result info
+lm1
+# plot result on data model
+plot(cars)
+abline(lm1, col="red")
+# plot detail information about lm1
+plot(lm1)
+
