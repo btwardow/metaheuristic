@@ -45,7 +45,7 @@ B.Twardowski@ii.pw.edu.pl
 
 Presentation, exercise source code with solutions are available online at:
 
- * http://home.elka.pw.edu.pl/~btwardow/MTW_lab1.tgz
+ * http://home.elka.pw.edu.pl/~btwardow/MTW_lab_gd.zip
  * https://github.com/btwardow/metaheuristic
 
 ## Gradient Descent - Intro
