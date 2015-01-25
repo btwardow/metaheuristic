@@ -19,7 +19,7 @@ e_learning_part <- function(student) {
 }
 ```
 
-## Exercise
+## Lab3 - Exercise
 
 ### Data preparation
 ### Simple analysis
@@ -55,6 +55,11 @@ require('xlsx')
 stock_data <- read.xlsx('../data//PLAMICA00010.xls', 1)
 # Date type conversion
 stock_data$Data=as.Date(stock_data$Data,format="%Y-%m-%d")
+```
+
+Look what's inside dataframe:
+```{r,eval=FALSE}
+summary(stock_data)
 head(stock_data)
 ```
 
