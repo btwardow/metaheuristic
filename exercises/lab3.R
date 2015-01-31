@@ -21,19 +21,19 @@ with(stock_data, {
 })
 plot(stock.week.avg,type='l',xlab="Week",ylab="Avg closing price(PLN)")
 
-predict_price <- function(weights=c(w1,w2,w3,w4), weekNum, weekAvg = stock.week.avg) {
+predict_price <- function(weights=c(w1,w2,w3,w4), weekNum, weekAvg=stock.week.avg) {
   prediction <- 0
-  count <-0
+  weight_sum <-0
   for(i in 1:length(weights)) {
     if(weekNum>i) {
       prediction <- prediction + weights[i]*weekAvg[weekNum-i] 
-      count <- count + 1
+      weight_sum <- weight_sum + weights[i]
     }
   }
-  return (prediction/count)
+  return (prediction/weight_sum)
 }
 
-predict_price(c(1,1,1,1),5)
+predict_price(c(1,1,1,1),5,stock.week.avg)
 
 stock.week.avg[5]
 
@@ -50,28 +50,70 @@ predict_eval <- function(weights=c(w1,w2,w3,w4), weekAvg = stock.week.avg){
 
 predict_eval(c(1,1,1,1))
 
+
+all_week_predictions<-function(par,weekAvg=stock.week.avg) {
+  return (as.numeric(lapply(
+    2:length(weekAvg),
+    FUN=function(n) predict_price(par,n,weekAvg)
+  )))
+}
+
+
+#PSO
+
 library(pso)
 #random initial weights
 init_weights=runif(4,0,1)
-opt_par<-psoptim(init_weights, predict_eval, gr=NULL, stock.week.avg,
+result_pso<-psoptim(init_weights, predict_eval, gr=NULL, stock.week.avg,
                  lower=rep(0,length(init_weights)), 
                  upper=rep(1,length(init_weights)),
                  control=list(maxit=100,type='SPSO2011',reltol=1e-8,vectorize=TRUE,trace=1))
 
-opt_par$par #best weights
+result_pso$par #best weights
+result_pso$value
 
-opt_par$value
+#SA
+init_weights=runif(4,0,1)
+result_sa <- optim(init_weights, predict_eval, gr=NULL, stock.week.avg,
+                   method = "SANN",
+                   control = list(maxit = 10000, temp = 10000, trace = TRUE,
+                                  REPORT = 100, tmax=10)
+)
+result_sa$par
+result_sa$value
+
+#GA
+#install.packages('GA')
+require(GA)
+init_weights=runif(4,0,1)
+
+result_ga <- ga("real-valued", predict_eval, stock.week.avg,
+                min=rep(0,length(init_weights)), 
+                max=rep(1,length(init_weights)),
+                maxiter = 1000
+)
+summary(result_ga)
+result_ga@solution
 
 
-test_prediction <-as.numeric(lapply(
-  2:length(stock.week.avg),
-  FUN=function(w) predict_price(opt_par$par,w,stock.week.avg)
-))
-
-test_prediction
-
+#plot
 par(mfrow=c(1,1))
-plot(test_prediction,type='o',col='red',ylim=c(min(test_prediction),max(test_prediction)),xlab="Week",ylab="Avg price(PLN)")
-points(stock.week.avg,type='o')
+plot(stock.week.avg,type='o',
+     ylim=c(min(stock.week.avg),max(stock.week.avg)),xlab="Week",ylab="Avg price(PLN)")
 
+
+pso_predictions <- all_week_predictions(result_pso$par)
+points(pso_predictions,type='o',col='red')
+
+dummy_predictions <- all_week_predictions(c(1,1,1,1))
+points(dummy_predictions,type='o',col='green')
+
+sa_predictions <- all_week_predictions(result_sa$par)
+points(sa_predictions,type='o',col='blue')
+
+ga_predictions <- all_week_predictions(result_ga@solution)
+points(ga_predictions,type='o',col='orange')
+
+legend('topleft', c('Real Value', 'Particle Swarm', 'Dummy', 'Simulated Anneling', 'Genetic Algorithm') , 
+       lty=1, col=c('black', 'red', 'green','blue', 'orange'), bty='n', cex=.75)
 

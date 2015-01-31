@@ -177,14 +177,14 @@ https://www.youtube.com/watch?v=C3jyhZhyNE4
 library(pso)
 #random initial weights
 init_weights=runif(4,0,1)
-pso_result<-psoptim(init_weights, predict_eval, gr=NULL, stock.week.avg,
+result_pso<-psoptim(init_weights, predict_eval, gr=NULL, stock.week.avg,
                  lower=rep(0,length(init_weights)), 
                  upper=rep(1,length(init_weights)),
                  control=list(maxit=100,type='SPSO2011',
                               reltol=1e-8,vectorize=TRUE))
 
-pso_result$par #best weights
-pso_result$value #minimal cost(eval) function
+result_pso$par #best weights
+result_pso$value #minimal cost(eval) function
 ```
 
 ## PSO Result visualization
@@ -208,10 +208,10 @@ par(mfrow=c(1,1))
 ```
 
 ```{r}
-pso_predictions <- all_week_predictions(pso_result$par)
-plot(pso_predictions,type='o',col='red',
-     ylim=c(min(pso_predictions),max(pso_predictions)),xlab="Week",ylab="Avg price(PLN)")
-points(stock.week.avg,type='o')
+plot(stock.week.avg,type='o',
+     ylim=c(min(stock.week.avg),max(stock.week.avg)),xlab="Week",ylab="Avg price(PLN)")
+pso_predictions <- all_week_predictions(result_pso$par)
+points(pso_predictions,type='o',col='red')
 ```
 
 ## PSO Result visualization - With dummy (1,1,1,1) prediction 
@@ -221,13 +221,84 @@ points(dummy_predictions,type='o',col='green')
 ```
 
 ```{r,echo=FALSE}
-plot(pso_predictions,type='o',col='red',
-     ylim=c(min(pso_predictions),max(pso_predictions)),xlab="Week",ylab="Avg price(PLN)")
-points(stock.week.avg,type='o')
+plot(stock.week.avg,type='o',
+     ylim=c(min(stock.week.avg),max(stock.week.avg)),xlab="Week",ylab="Avg price(PLN)")
+pso_predictions <- all_week_predictions(result_pso$par)
+points(pso_predictions,type='o',col='red')
 dummy_predictions <- all_week_predictions(c(1,1,1,1))
 points(dummy_predictions,type='o',col='green')
 ```
 
 
+## Simulated annealing (stats::optim)
+
+```{r,message=FALSE}
+init_weights=runif(4,0,1)
+result_sa <- optim(init_weights, predict_eval, gr=NULL, stock.week.avg,
+                   method = "SANN",
+                   control = list(maxit = 10000, temp = 10000, #trace=TRUE,
+                                  REPORT = 0, tmax=10)
+)
+```
+```{r}
+result_sa$par
+result_sa$value
+```
+
+## Simulated annealing - Plot
+
+```{r,echo=FALSE}
+par(mfrow=c(1,1))
+plot(stock.week.avg,type='o',
+     ylim=c(min(stock.week.avg),max(stock.week.avg)),xlab="Week",ylab="Avg price(PLN)")
+
+pso_predictions <- all_week_predictions(result_pso$par)
+points(pso_predictions,type='o',col='red')
+
+dummy_predictions <- all_week_predictions(c(1,1,1,1))
+points(dummy_predictions,type='o',col='green')
+
+sa_predictions <- all_week_predictions(result_sa$par)
+points(sa_predictions,type='o',col='blue')
+```
+
+## Genetic Algorithms (GA::ga)
+
+```{r,message=FALSE}
+require(GA)
+init_weights=runif(4,0,1)
+
+result_ga <- ga("real-valued", predict_eval, stock.week.avg,
+                min=rep(0,length(init_weights)), 
+                max=rep(1,length(init_weights)),
+                maxiter = 1000
+                )
+```
+```{r}
+result_ga@solution
+```
 
 
+## Genetic Algorithms - Plot
+
+```{r,echo=FALSE}
+par(mfrow=c(1,1))
+plot(stock.week.avg,type='o',
+     ylim=c(min(stock.week.avg),max(stock.week.avg)),xlab="Week",ylab="Avg price(PLN)")
+
+
+pso_predictions <- all_week_predictions(result_pso$par)
+points(pso_predictions,type='o',col='red')
+
+dummy_predictions <- all_week_predictions(c(1,1,1,1))
+points(dummy_predictions,type='o',col='green')
+
+sa_predictions <- all_week_predictions(result_sa$par)
+points(sa_predictions,type='o',col='blue')
+
+ga_predictions <- all_week_predictions(result_ga@solution)
+points(ga_predictions,type='o',col='orange')
+
+legend('topleft', c('Real Value', 'Particle Swarm', 'Dummy', 'Simulated Anneling', 'Genetic Algorithm') , 
+   lty=1, col=c('black', 'red', 'green','blue', 'orange'), bty='n', cex=.75)
+```
