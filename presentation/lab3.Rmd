@@ -33,10 +33,10 @@ http://www.gpwinfostrefa.pl/GPWIS2/pl/quotes/archive/1
 
 ### Download historical data 
 
-Choose one year period (e.g. from *2010/01/01* to *2011/01/01*)
-and download data for selected company (e.g. *AMICA*).
+Choose one year period (e.g. from *2013/01/01* to *2014/01/01*)
+and download data for selected company (e.g. *IVMX*).
 
-Data will be downloaded in Excel file named like: _PLAMICA00010.xls_.
+Data will be downloaded in Excel file named like: _PLMATRX00017.xls_
 
 **TODO:** Open Excel and look at the downloaded data.
 
@@ -50,9 +50,9 @@ install.packages('xlsx')
 
 Reading data into R:
 
-```{r,echo=FALSE}
+```{r,message=FALSE}
 require('xlsx')
-stock_data <- read.xlsx('../data//PLAMICA00010.xls', 1)
+stock_data <- read.xlsx('../data/PLMATRX00017.xls', 1)
 # Date type conversion
 stock_data$Data=as.Date(stock_data$Data,format="%Y-%m-%d")
 ```
@@ -66,11 +66,11 @@ head(stock_data)
 ## Analysis - Plot the data
 
 ```{r}
-par(mfrow=c(2,2))
+par(mfrow=c(1,2))
 plot(stock_data$Kurs.zamkniecia~stock_data$Data, xlab="Data", ylab="Closing price (PLN)")
 plot(stock_data$Kurs.zamkniecia~stock_data$Kurs.otwarcia, xlab="Starting price (PLN)", ylab="Closing price (PLN)")
-plot(stock_data$Kurs.zamkniecia~stock_data$Wolumen.obrotu, xlab="Trading volume", ylab="Closing price (PLN)")
-plot(stock_data$Kurs.zamkniecia~stock_data$Kurs.maksymalny, xlab="Maximla price (PLN)", ylab="Closing price (PLN)")
+#plot(stock_data$Kurs.zamkniecia~stock_data$Wolumen.obrotu, xlab="Trading volume", ylab="Closing price (PLN)")
+#plot(stock_data$Kurs.zamkniecia~stock_data$Kurs.maksymalny, xlab="Maximla price (PLN)", ylab="Closing price (PLN)")
 ````
 
 ## Aggregate data by week
@@ -103,21 +103,25 @@ Parameters of prediction are *weights* for avarage.
 ```{r}
 predict_price <- function(weights=c(w1,w2,w3,w4), weekNum, weekAvg) {
   prediction <- 0
-  count <-0
+  weight_sum <-0
   for(i in 1:length(weights)) {
     if(weekNum>i) {
       prediction <- prediction + weights[i]*weekAvg[weekNum-i] 
-      count <- count + 1
+      weight_sum <- weight_sum + weights[i]
     }
   }
-  return (prediction/count)
+  return (prediction/weight_sum)
 }
 ```
 
-Simple avarage from last for weeks:
+## Predicting avarage week price  - example
+
+Simple avarage from last 4 weeks:
 
 ```{r}
-predict_price(c(1,1,1,1),5,stock.week.avg)
+test_week_num <- 10
+predict_price(c(1,1,1,1),test_week_num, stock.week.avg)
+stock.week.avg[test_week_num]
 ```
 
 ## Parameters evealuation 
@@ -126,7 +130,7 @@ Cost function will be Mean Root Square function calculated on
 all dataset for given parameters (weights for our prediction).
 
 ```{r}
-predict_eval <- function(weights=c(w1,w2,w3,w4), weekAvg){
+predict_eval <- function(weights=c(w1,w2,w3,w4), weekAvg = stock.week.avg){
   predictions <-as.numeric(lapply(4:length(weekAvg),
                     FUN=function(w) predict_price(weights,w,weekAvg)
                   )
@@ -140,6 +144,9 @@ predict_eval <- function(weights=c(w1,w2,w3,w4), weekAvg){
 
 ## Finding best weights
 
+Optimization task ->
+[CRAN Task View: Optimization and Mathematical Programming](http://cran.r-project.org/web/views/Optimization.html)
+
 To find weights for our prediction which best fits the model we us one of
 metaheuristic algorithm: **Particle Swarm Optimization** from package
 **pso**.
@@ -148,36 +155,78 @@ metaheuristic algorithm: **Particle Swarm Optimization** from package
 install.packages('pso')
 ?pso::psoptim
 ```
+![swarm pic](http://jol.telecomitalia.com/jolswarm/wp-content/uploads/2014/05/Swarm-Theory.png)
 
-## Runing optimizer
+## Particle Swarm Optimization
+
+- optimizes a problem by iteratively trying to improve a candidate solution
+
+- population -> swarm, candidate solutions -> called particles
+
+- movements of the particles are guided by their own best known position in the search-space as well as the entire swarm's best known position
+
+- example visualization: 
+http://vimeo.com/17407010
+
+- nice lecture about stochastic optimization
+https://www.youtube.com/watch?v=C3jyhZhyNE4
+
+## Running optimizer
 
 ```{r}
 library(pso)
 #random initial weights
 init_weights=runif(4,0,1)
-opt_par<-psoptim(init_weights, predict_eval, gr=NULL, stock.week.avg,
+pso_result<-psoptim(init_weights, predict_eval, gr=NULL, stock.week.avg,
                  lower=rep(0,length(init_weights)), 
                  upper=rep(1,length(init_weights)),
-                 control=list(maxit=100,type='SPSO2011',reltol=1e-8,vectorize=TRUE))
+                 control=list(maxit=100,type='SPSO2011',
+                              reltol=1e-8,vectorize=TRUE))
 
-opt_par$par #best weights
-opt_par$value #minimal cost(eval) function
+pso_result$par #best weights
+pso_result$value #minimal cost(eval) function
 ```
 
-## Result visualization
+## PSO Result visualization
+
+### Helping function
 
 ```{r}
-test_prediction <-as.numeric(lapply(
-  2:length(stock.week.avg),
-  FUN=function(w) predict_price(opt_par$par,w,stock.week.avg)
-  ))
-
-par(mfrow=c(1,1))
-plot(test_prediction,type='o',col='red',ylim=c(min(test_prediction),max(test_prediction)),xlab="Week",ylab="Avg price(PLN)")
-points(test_prediction[-(1)],type='o')
+all_week_predictions<-function(par,weekAvg=stock.week.avg) {
+  return (as.numeric(lapply(
+    2:length(weekAvg),
+    FUN=function(n) predict_price(par,n,weekAvg)
+  )))
+}
 ```
 
+## PSO Result visualization - Plot
 
+```{r,echo=FALSE}
+## reset plot
+par(mfrow=c(1,1))
+```
+
+```{r}
+pso_predictions <- all_week_predictions(pso_result$par)
+plot(pso_predictions,type='o',col='red',
+     ylim=c(min(pso_predictions),max(pso_predictions)),xlab="Week",ylab="Avg price(PLN)")
+points(stock.week.avg,type='o')
+```
+
+## PSO Result visualization - With dummy (1,1,1,1) prediction 
+```{r,eval=FALSE}
+dummy_predictions <- all_week_predictions(c(1,1,1,1))
+points(dummy_predictions,type='o',col='green')
+```
+
+```{r,echo=FALSE}
+plot(pso_predictions,type='o',col='red',
+     ylim=c(min(pso_predictions),max(pso_predictions)),xlab="Week",ylab="Avg price(PLN)")
+points(stock.week.avg,type='o')
+dummy_predictions <- all_week_predictions(c(1,1,1,1))
+points(dummy_predictions,type='o',col='green')
+```
 
 
 
