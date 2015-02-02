@@ -60,18 +60,22 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 </div>
 
 
-<p>Instrukcja ta opisuje ćwiczenie do samodzielnego wykonania w ramach kursu <em>Metaheurystyki i Technologie Wieloagentowe</em>.</p>
+<p>Instrukcja opisuje ćwiczenie do samodzielnego wykonania w ramach kursu <em>Metaheurystyki i Technologie Wieloagentowe</em>.</p>
 <p>Celem ćwiczenia jest:</p>
 <ul>
 <li>weryfikacja podstaw znajomości języka R</li>
 <li>przeprowadzenie prostej analizy danych</li>
-<li>rozwiązanie problemu estymacji z wykorzystaniem dwóch algorytmów heurystycznych ** bazującego na podejściu <em>Hill Climbing</em> ** wykorzystaniu jednego z dostępnych pakietów do optymalizacji rojem cząstek</li>
+<li>rozwiązanie problemu estymacji z wykorzystaniem dwóch algorytmów heurystycznych:
+<ul>
+<li>bazującego na podejściu <em>Hill Climbing</em></li>
+<li>wykorzystaniu jednego z dostępnych pakietów do optymalizacji rojem cząstek</li>
+</ul></li>
 <li>porównanie wyników z wykorzystaniem podejścia bez algorytmów heurystycznych</li>
 </ul>
 <div id="do-realizacji-cwiczenia-beda-potrzebne" class="section level3">
 <h3>Do realizacji ćwiczenia będą potrzebne:</h3>
 <ul>
-<li><p>środowisko języka R: lokalnie zainstalowane RStudio (można pobrać z strony: <a href="http://www.rstudio.com/products/rstudio/download/">http://www.rstudio.com/products/rstudio/download/</a>) lub dostępny dla uczestników kursu RServer (<a href="http://r2d2.ii.pw.edu.pl:8787">http://r2d2.ii.pw.edu.pl:8787</a>)</p></li>
+<li><p>środowisko do języka R: lokalnie zainstalowane RStudio (można pobrać z strony: <a href="http://www.rstudio.com/products/rstudio/download/">http://www.rstudio.com/products/rstudio/download/</a>) lub dostępny dla uczestników kursu RServer (<a href="http://r2d2.ii.pw.edu.pl:8787">http://r2d2.ii.pw.edu.pl:8787</a>)</p></li>
 <li><p>dostęp do sieci internet w celu pobrania zbioru danych oraz niezbędnych pakietów</p></li>
 </ul>
 </div>
@@ -91,7 +95,11 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 <li><em>Default Output Format</em> ustawiamy na HTML</li>
 </ul>
 <p>Zostanie wygenerowany podstawowy szablon dokumentu który możemy uruchomić klikając przycisk <em>Knit HTML</em> w okienku edytora. Szablon jest zarazem przykładem prezentującym jak powinniśmy osadzać kod R w naszym raporcie. Zarówno wtedy kiedy chcemy aby nie był on widoczny w naszym raporcie (np. ładowanie pakietów).</p>
-<p>Plik zapisujemy pod nazwą: <strong>MTW_imię_nazwisko</strong>. Po wykonanym ćwiczeniu wysyłamy jako załącznik raport HTML wraz z plikiem RMarkdown na email do prowadzącego (<a href="mailto:B.Twardowski@ii.pw.edu.pl">B.Twardowski@ii.pw.edu.pl</a>).</p>
+<p>Plik zapisujemy pod nazwą: <strong>MTW_imię_nazwisko</strong>. Po wykonanym ćwiczeniu wysyłamy jako załącznik raport HTML wraz z plikiem RMarkdown na email do prowadzącego, tj.:</p>
+<ul>
+<li>grupa 1 i 3: <a href="mailto:B.Nachyla@ii.pw.edu.pl">B.Nachyla@ii.pw.edu.pl</a></li>
+<li>grupa 2 i 4: <a href="mailto:B.Twardowski@ii.pw.edu.pl">B.Twardowski@ii.pw.edu.pl</a></li>
+</ul>
 <p>Czyli w przypadku <em>Jana Kowalskiego</em> będą to 2 pliki:</p>
 <ul>
 <li>MTW_jan_kowalski.Rmd</li>
@@ -111,7 +119,12 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 <h2>Eksploracyjna analiza danych</h2>
 <div id="podstawowe-informacje-o-zbiorze" class="section level3">
 <h3>Podstawowe informacje o zbiorze</h3>
-<p>W raporcie zawrzeć proste informacje o zbiorze danych w <code>housing</code>: - jaka jest liczba obserwacji - przykład paru obserwacji (<code>?head</code>) - proste statystyki dla atrybutów w zbiorze (<code>?summary</code>)</p>
+<p>W raporcie zawrzeć proste informacje o zbiorze danych w <code>housing</code>:</p>
+<ul>
+<li>jaka jest liczba obserwacji</li>
+<li>przykład paru obserwacji (<code>?head</code>)</li>
+<li>proste statystyki dla atrybutów w zbiorze (<code>?summary</code>)</li>
+</ul>
 </div>
 <div id="wizualizacja-danych" class="section level3">
 <h3>Wizualizacja danych</h3>
@@ -160,7 +173,12 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
   }
   list(S=S,quality=quality(S,X,y), S_history=S_h, quality_history=quality_h)
 }</code></pre>
-<p>Aby móc uruchomić funkcje <code>metaheuristic</code> należy zaimplementować poprawnie podać funkcje oceny stanu oraz modyfikacji</p>
+<p>Aby móc uruchomić funkcje <code>metaheuristic</code> należy poprawnie zaimplementować a następnie przkazać funkcje:</p>
+<ul>
+<li><code>quality</code> - funkcja oceny dopasowania, zwracająca dla podanego stanu S liczbę rzeczywistą będącą odwzorowaniem jakości dopasowania (celu)</li>
+<li><code>tweek</code> - funkcja modyfikacji stanu. Zwraca zmodyfikowany wektor, nowy stan dla naszego algorytmu, który dalej posłuży po poszukiwania lepszego rozwiązania.</li>
+</ul>
+<p>Puste definicje obu funkcji podane są poniżej:</p>
 <pre class="r"><code>quality &lt;- function(S, X, y) {
   //...
 }
@@ -168,12 +186,15 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 tweak &lt;- function(S) { 
   //...
 }</code></pre>
-<p>Przykład wykorzystania dla dopasowania modelu liniowego dla zbioru <code>cars</code> z pakietu <code>datasets</code>. W tym przypadku mamy tylko jedną zmienną objaśniającą - jaka była prędkość auta. Stąd mamy tylko dwa parametry <code>S</code> - dla zmiennej i wyrazu wolnego.</p>
-<pre class="r"><code>quality &lt;- function(S, X, y)
+<p>Poniżej został przedstawiony przykład wykorzystania dla dopasowania modelu liniowego dla zbioru <code>cars</code> z pakietu <code>datasets</code>.</p>
+<p>W tym przypadku mamy tylko jedną zmienną objaśniającą - jaka była prędkość auta. Stąd mamy tylko dwa parametry <code>S</code> - dla zmiennej i wyrazu wolnego.</p>
+<pre class="r"><code>quality &lt;- function(S, X, y){
   sum((y - X %*% S)^2)
+  }
 
 tweak &lt;- function(S) { 
   S + runif(nrow(S), min=-0.1, max=0.1)
+  }
 
 require(datasets)
 cars$speed_km &lt;- cars$speed * 1.609344
@@ -197,13 +218,15 @@ abline(coef=result$S, col=&quot;red&quot;)
 # check out the trajectory of the cost function
 result$quality_history[seq(1,iterations, by=10)]
 plot(result$quality_history, type='l', col='blue', lwd=2, main='Quality function', ylab='quality(S,X,y)', xlab='Iterations')</code></pre>
-<p>W raporcie należy wykonać: - implementacje funkcji <code>eval</code> dla obliczania błędu średnio-kwadratowego na całym zbiorze - implementacje funkcji <code>tweek</code> tak, aby algorytm działał metodą <em>Hill Climbing</em> - uruchomić i odnaleźć najlepsze dopasowanie dla zbioru <code>housing</code>. Rezultat zapisać do zmiennej <code>result_meta</code> - wykreślić wykres funkcji dopasowania od iteracji - wyświetlić otrzymany rezultat oraz zinterpretować wynik. Który parametr najbardziej wpływa na cenę nieruchomości?</p>
+<p>Więcej o przykładzie oraz inny pomocny kod można znaleźć na repozytorium github gdzie jest kod wykorzystywany na laboratioriach przedmiotu MTW: <a href="https://github.com/btwardow/metaheuristic">https://github.com/btwardow/metaheuristic</a></p>
+<p>W raporcie należy wykonać: - implementacje funkcji <code>quality</code> dla obliczania błędu średnio-kwadratowego na całym zbiorze - implementacje funkcji <code>tweek</code> tak, aby algorytm działał metodą <em>Hill Climbing</em> - uruchomić i odnaleźć najlepsze dopasowanie dla zbioru <code>housing</code>. Rezultat zapisać do zmiennej <code>result_meta</code> - wykreślić wykres funkcji dopasowania od iteracji - wyświetlić otrzymany rezultat oraz zinterpretować wynik. Który parametr najbardziej wpływa na cenę nieruchomości?</p>
 </div>
-<div id="uzycie-slgorytmu-roju-czastek" class="section level3">
-<h3>Użycie slgorytmu roju cząstek</h3>
+<div id="uzycie-algorytmu-roju-czastek" class="section level3">
+<h3>Użycie algorytmu roju cząstek</h3>
 <p>Jednym z dostępnych pakietów dla języka R jest pakiet umożliwiający optymalizację z wykorzystaniem algorytmu roju cząstek. Szczególnie polecany dla optymalizacji funkcji nieliniowych. Pakiet dostępny jest w repozytorium pod nazwą <code>pso</code>. Należy zainstalować i zaimportować pakiet.</p>
 <p>Następnie zapoznać się z dokumentacją funkcji <code>psoptim</code> i użyć jej do rozwiązania problemu najlepszego dopasowania regresji liniowej z wykorzystaniem tej samej funkcji kosztu, czyli błędu średnio-kwadratowego na całym zbiorze dostępnych danych.</p>
 <p>Wyświetlić rezultat w raporcie. Dodatkowo, wynik zapisać w zmiennej <code>result_pso</code>.</p>
+<p><em>Pakiet <code>pso</code> był wykorzytywany na laboratorium 3. Przykłady oraz kod z zajęć można znaleźć na repozytorium github:</em> <a href="https://github.com/btwardow/metaheuristic">https://github.com/btwardow/metaheuristic</a></p>
 </div>
 <div id="wykorzystanie-funkcji-lm" class="section level3">
 <h3>Wykorzystanie funkcji <em>lm()</em></h3>
@@ -216,7 +239,13 @@ plot(result$quality_history, type='l', col='blue', lwd=2, main='Quality function
 </div>
 <div id="porownanie-modeli" class="section level3">
 <h3>Porównanie modeli</h3>
-<p>W raporcie należy: - porównać rezultaty otrzymane różnymi metodami (<code>result_meta</code>, <code>result_pso</code>, <code>result_lm</code>) - jak możemy zinterpretować otrzymane wyniki? - kiedy jakiej metody powinniśmy użyć?</p>
+<p>W raporcie należy:</p>
+<ul>
+<li>porównać rezultaty otrzymane różnymi metodami (<code>result_meta</code>, <code>result_pso</code>, <code>result_lm</code>)</li>
+<li>jak możemy zinterpretować otrzymane wyniki?</li>
+<li>kiedy jakiej metody powinniśmy użyć?</li>
+<li>jakie inne pakiety języka R można wykorzytać do rozwiązania tego problemu optymalizacji? Podać przykład uruchomienia.</li>
+</ul>
 </div>
 </div>
 </div>

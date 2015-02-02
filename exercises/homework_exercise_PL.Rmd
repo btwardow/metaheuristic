@@ -6,20 +6,20 @@ date: "25 January 2015"
 output: html_document
 ---
 
-Instrukcja ta opisuje ćwiczenie do samodzielnego wykonania w ramach kursu *Metaheurystyki i Technologie Wieloagentowe*. 
+Instrukcja opisuje ćwiczenie do samodzielnego wykonania w ramach kursu *Metaheurystyki i Technologie Wieloagentowe*. 
 
 Celem ćwiczenia jest:
 
 * weryfikacja podstaw znajomości języka R
 * przeprowadzenie prostej analizy danych 
-* rozwiązanie problemu estymacji z wykorzystaniem dwóch algorytmów heurystycznych
-** bazującego na podejściu _Hill Climbing_
-** wykorzystaniu jednego z dostępnych pakietów do optymalizacji rojem cząstek
+* rozwiązanie problemu estymacji z wykorzystaniem dwóch algorytmów heurystycznych:
+    - bazującego na podejściu _Hill Climbing_
+    - wykorzystaniu jednego z dostępnych pakietów do optymalizacji rojem cząstek
 * porównanie wyników z wykorzystaniem podejścia bez algorytmów heurystycznych
 
 ### Do realizacji ćwiczenia będą potrzebne:
 
-* środowisko języka R: lokalnie zainstalowane RStudio (można pobrać z strony: http://www.rstudio.com/products/rstudio/download/) lub dostępny dla uczestników kursu RServer (http://r2d2.ii.pw.edu.pl:8787)
+* środowisko do języka R: lokalnie zainstalowane RStudio (można pobrać z strony: http://www.rstudio.com/products/rstudio/download/) lub dostępny dla uczestników kursu RServer (http://r2d2.ii.pw.edu.pl:8787)
 
 * dostęp do sieci internet w celu pobrania zbioru danych oraz niezbędnych pakietów
 
@@ -46,7 +46,10 @@ Szablon jest zarazem przykładem prezentującym jak powinniśmy osadzać kod R w
 Zarówno wtedy kiedy chcemy aby nie był on widoczny w naszym raporcie (np. ładowanie pakietów).
 
 Plik zapisujemy pod nazwą: **MTW_imię_nazwisko**.
-Po wykonanym ćwiczeniu wysyłamy jako załącznik raport HTML wraz z plikiem RMarkdown na email do prowadzącego (B.Twardowski@ii.pw.edu.pl). 
+Po wykonanym ćwiczeniu wysyłamy jako załącznik raport HTML wraz z plikiem RMarkdown na email do prowadzącego, tj.:
+ 
+ - grupa 1 i 3: B.Nachyla@ii.pw.edu.pl 
+ - grupa 2 i 4: B.Twardowski@ii.pw.edu.pl
 
 Czyli w przypadku *Jana Kowalskiego* będą to 2 pliki: 
 
@@ -72,6 +75,7 @@ W raporcie opisać typy poszczególnych atrybutów.
 ### Podstawowe informacje o zbiorze
 
 W raporcie zawrzeć proste informacje o zbiorze danych w `housing`:
+
 - jaka jest liczba obserwacji
 - przykład paru obserwacji (`?head`)
 - proste statystyki dla atrybutów w zbiorze (`?summary`)
@@ -133,7 +137,12 @@ metaheuristic <- function(X, y, S_init, quality, tweek, max_iter = 1000, thresho
 }
 ```
 
-Aby móc uruchomić funkcje `metaheuristic` należy zaimplementować poprawnie podać funkcje oceny stanu oraz modyfikacji
+Aby móc uruchomić funkcje `metaheuristic` należy poprawnie zaimplementować a następnie przkazać funkcje:
+
+* `quality` - funkcja oceny dopasowania, zwracająca dla podanego stanu S liczbę rzeczywistą będącą odwzorowaniem jakości dopasowania (celu)
+* `tweek` - funkcja modyfikacji stanu. Zwraca zmodyfikowany wektor, nowy stan dla naszego algorytmu, który dalej posłuży po poszukiwania lepszego rozwiązania.
+
+Puste definicje obu funkcji podane są poniżej:
 
 ```{r,eval=FALSE}
 quality <- function(S, X, y) {
@@ -145,16 +154,19 @@ tweak <- function(S) {
 }
 ```
 
-Przykład wykorzystania dla dopasowania modelu liniowego dla zbioru `cars` z pakietu `datasets`. 
+Poniżej został przedstawiony przykład wykorzystania dla dopasowania modelu liniowego dla zbioru `cars` z pakietu `datasets`. 
+
 W tym przypadku mamy tylko jedną zmienną objaśniającą - jaka była prędkość auta. 
 Stąd mamy tylko dwa parametry `S` - dla zmiennej i wyrazu wolnego. 
 
 ```{r,eval=FALSE}
-quality <- function(S, X, y)
+quality <- function(S, X, y){
   sum((y - X %*% S)^2)
+  }
 
 tweak <- function(S) { 
   S + runif(nrow(S), min=-0.1, max=0.1)
+  }
 
 require(datasets)
 cars$speed_km <- cars$speed * 1.609344
@@ -181,15 +193,17 @@ plot(result$quality_history, type='l', col='blue', lwd=2, main='Quality function
 
 ```
 
+Więcej o przykładzie oraz inny pomocny kod można znaleźć na repozytorium github gdzie jest kod wykorzystywany na laboratioriach przedmiotu MTW: https://github.com/btwardow/metaheuristic
+
 W raporcie należy wykonać:
-- implementacje funkcji `eval` dla obliczania błędu średnio-kwadratowego na całym zbiorze
+- implementacje funkcji `quality` dla obliczania błędu średnio-kwadratowego na całym zbiorze
 - implementacje funkcji `tweek` tak, aby algorytm działał metodą _Hill Climbing_
 - uruchomić i odnaleźć najlepsze dopasowanie dla zbioru `housing`. Rezultat zapisać do zmiennej `result_meta`
 - wykreślić wykres funkcji dopasowania od iteracji
 - wyświetlić otrzymany rezultat oraz zinterpretować wynik. Który parametr najbardziej wpływa na cenę nieruchomości? 
 
 
-### Użycie slgorytmu roju cząstek
+### Użycie algorytmu roju cząstek
 
 Jednym z dostępnych pakietów dla języka R jest pakiet umożliwiający optymalizację z wykorzystaniem algorytmu roju cząstek. Szczególnie polecany dla optymalizacji funkcji nieliniowych. Pakiet dostępny jest w repozytorium pod nazwą `pso`. Należy zainstalować i zaimportować pakiet. 
 
@@ -197,6 +211,8 @@ Następnie zapoznać się z dokumentacją funkcji `psoptim` i użyć jej do rozw
 
 Wyświetlić rezultat w raporcie.
 Dodatkowo, wynik zapisać w zmiennej `result_pso`.
+
+_Pakiet `pso` był wykorzytywany na laboratorium 3. Przykłady oraz kod z zajęć można znaleźć na repozytorium github:_ https://github.com/btwardow/metaheuristic
 
 ### Wykorzystanie funkcji *lm()*
 
@@ -211,6 +227,8 @@ Więcej o wykorzystaniu funkcji `lm`, jej argumentach, rezultacie i bardziej zł
 ### Porównanie modeli
 
 W raporcie należy: 
+
 - porównać rezultaty otrzymane różnymi metodami (`result_meta`, `result_pso`, `result_lm`)
 - jak możemy zinterpretować otrzymane wyniki? 
 - kiedy jakiej metody powinniśmy użyć?
+- jakie inne pakiety języka R można wykorzytać do rozwiązania tego problemu optymalizacji? Podać przykład uruchomienia.
